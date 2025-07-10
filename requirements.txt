@@ -1,0 +1,16 @@
+"fastapi[all]" 
+uvicorn 
+python-multipart 
+pypdf 
+langchain 
+google-generativeai 
+langchain-google-genai 
+chromadb 
+sentence-transformers
+langchain_community
+newspaper3k
+utils
+pytube
+openai-whisper
+yt-dlp
+google-cloud-aiplatform
