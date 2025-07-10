@@ -1,51 +1,9 @@
-# Virtual environment
 .venv/
 env/
 venv/
 vector_stores/
 temp_files/
 test_docs/
-# Python cache files
 __pycache__/
-*.py[cod]
-*$py.class
-
-# Environment variables
 .env
 .env.*
-
-
-# Logs
-*.log
-*.out
-*.err
-
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Byte-compiled and optimized files
-*.pyo
-*.pyd
-
-# Distribution files
-build/
-dist/
-*.egg-info/
-.eggs/
-
-# Test coverage and reports
-htmlcov/
-.coverage
-.tox/
-.nox/
-.pytest_cache/
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
-
-# System files
-.DS_Store
-Thumbs.db
