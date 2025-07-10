@@ -11,16 +11,7 @@ from langchain.prompts import PromptTemplate
 app = FastAPI()
 import re
 
-
-
-
-
-# --- The rest of your main.py file remains the same ---
-# ... (imports, origins, app.add_middleware, etc.) ...
-# --- CORS Configuration ---
-# This is crucial for allowing the frontend (running on a different URL)
-# to communicate with this backend.
-origins = ["*"] # In production, you'd restrict this to your frontend's domain
+origins = ["*"] 
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,14 +26,13 @@ class UrlRequest(BaseModel):
 def read_root():
     return {"status": "Shiksha Sahayak Backend is running!"}
 
-# --- PDF Processing Endpoint ---
+
 @app.post("/process-pdf")
 async def process_pdf_endpoint(file: UploadFile = File(...)):
     """
     Receives a PDF file, processes it through the RAG pipeline,
     and returns a unique session ID for future interactions.
     """
-    # 1. Save the uploaded file temporarily
     temp_dir = "temp_files"
     os.makedirs(temp_dir, exist_ok=True)
     file_path = os.path.join(temp_dir, file.filename)
@@ -50,10 +40,8 @@ async def process_pdf_endpoint(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
     
-    # 2. Generate a unique session ID
     session_id = str(uuid.uuid4())
 
-    # 3. Process the PDF using our rag_processor
     try:
         chunks = load_and_split_pdf(file_path)
         create_vector_store(chunks, session_id)
@@ -67,9 +55,6 @@ async def process_pdf_endpoint(file: UploadFile = File(...)):
     os.remove(file_path)
 
     return {"status": status, "message": message, "session_id": session_id}
-
-# main.py (add this new section of code)
-# You'll need to add your Google API Key here
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains import RetrievalQA

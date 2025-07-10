@@ -3,12 +3,14 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from newspaper import Article
 import whisper
 from pytube import YouTube
-print("All libraries imported successfully.")
-
-# rag_processor.py (add this below the imports)
+from newspaper import Article
+import shutil
+import subprocess
+import whisper
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.docstore.document import Document as LangchainDocument
 
 def load_and_split_pdf(pdf_path: str):
     """
@@ -31,9 +33,6 @@ def load_and_split_pdf(pdf_path: str):
 
     print(f"Successfully split the document into {len(chunks)} chunks.")
     return chunks
-
-# rag_processor.py (add this below the previous function)
-
 def create_vector_store(chunks, session_id: str):
     """
     Creates a ChromaDB vector store from the text chunks and saves it to disk.
@@ -45,19 +44,11 @@ def create_vector_store(chunks, session_id: str):
     Returns:
         The path to the persistent vector store directory.
     """
-    # 1. Define the embedding model
-    # This model will convert our text chunks into numerical vectors.
-    # "all-MiniLM-L6-v2" is a popular, fast, and effective model.
-    embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
-    # 2. Define the path for the persistent vector store
-    # We use the session_id to create a unique folder for each uploaded PDF.
+    embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     persist_directory = os.path.join("vector_stores", session_id)
     print(f"Creating vector store at: {persist_directory}")
 
-    # 3. Create and persist the vector store
-    # This is the core step. ChromaDB takes the chunks, uses the embedding model
-    # to convert them to vectors, and saves everything to the specified directory.
     vectordb = Chroma.from_documents(
         documents=chunks,
         embedding=embedding_model,
@@ -68,10 +59,6 @@ def create_vector_store(chunks, session_id: str):
     print("Vector store created successfully.")
     return persist_directory
 
-# rag_processor.py (add this new function)
-
-from newspaper import Article
-
 def load_and_split_url(url: str):
     """
     Loads content from a URL, extracts the main article, and splits it into chunks.
@@ -81,21 +68,11 @@ def load_and_split_url(url: str):
     article = Article(url)
     article.download()
     article.parse()
-    
-    # 2. We use the article's text as our document content
-    # We wrap it in a list of one to match the structure from PyPDFLoader
-    # The page_content is the main text, and metadata helps us know the source.
+
     documents = [
         {"page_content": article.text, "metadata": {"source": url}}
     ]
-
-    # 3. Split the document into chunks (reusing our existing splitter)
-    # Note: We need to adapt this slightly as we don't have LangChain 'Document' objects yet.
-    # Let's refine this to be more robust.
-
     from langchain.docstore.document import Document as LangchainDocument
-
-    # Convert our parsed data into the format LangChain expects
     langchain_docs = [LangchainDocument(page_content=article.text, metadata={"source": url})]
     
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
@@ -103,14 +80,6 @@ def load_and_split_url(url: str):
 
     print(f"Successfully split the URL content into {len(chunks)} chunks.")
     return chunks
-
-
-import os
-import shutil
-import subprocess
-import whisper
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.docstore.document import Document as LangchainDocument
 
 def load_and_split_youtube_url(url: str):
     """
@@ -161,16 +130,11 @@ def load_and_split_youtube_url(url: str):
 
 if __name__ == '__main__':
     TEST_SESSION_ID = "test_session_123"
-
-    # 2. Define the path to our sample PDF
     pdf_path = os.path.join("test_docs", "test.pdf")
-
-    # 3. Check if the sample PDF exists
     if not os.path.exists(pdf_path):
         print(f"Error: Test PDF not found at {pdf_path}")
         print("Please create a 'test_docs' folder and place a 'sample.pdf' file inside it.")
     else:
-        # 4. Run the entire pipeline
         chunks = load_and_split_pdf(pdf_path)
         if chunks:
             vector_store_path = create_vector_store(chunks, TEST_SESSION_ID)
